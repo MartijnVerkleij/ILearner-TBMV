@@ -13,8 +13,20 @@ public class Document {
 		this.category = null;
 		this.contents = contents;
 	}
+	
+	public String getContents() {
+		return contents;
+	}
 
 	public String[] getContentsAsArray() {
-		return contents.split(" |.|,");
+		return contents.split(" |.|,|?|!");
+	}
+
+	public String getCategory() {
+		return category;
+	}
+	
+	public void setCategory(String category) {
+		this.category = category;
 	}
 }

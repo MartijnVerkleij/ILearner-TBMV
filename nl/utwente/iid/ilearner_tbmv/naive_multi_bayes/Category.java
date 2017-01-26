@@ -2,7 +2,7 @@ package nl.utwente.iid.ilearner_tbmv.naive_multi_bayes;
 
 public class Category {
 	
-	String name;
+	private String name;
 	
 	public Category(String name) {
 		this.name = name;
@@ -12,5 +12,4 @@ public class Category {
 	public String toString() {
 		return name;
 	}
-
 }

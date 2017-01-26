@@ -17,4 +17,8 @@ public class Vocabulary {
 	public TreeSet<String> getVocabulary() {
 		return vocabulary;
 	}
+	
+	public int size() {
+		return vocabulary.size();
+	}
 }

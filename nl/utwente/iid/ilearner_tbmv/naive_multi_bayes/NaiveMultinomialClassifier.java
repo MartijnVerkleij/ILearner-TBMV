@@ -1,31 +1,51 @@
 package nl.utwente.iid.ilearner_tbmv.naive_multi_bayes;
 
+
+
+
 public class NaiveMultinomialClassifier {
 
 	
+	// ALPHA is the parameter used for smoothing.
+	double alpha = 1.0;
 	
-	public void train(Category[] cats, Document[] docs) {
-		Vocabulary v = new Vocabulary(docs);
-		int n = docs.length;
-		int[] prior = new int[cats.length];
+	int[] docsInClass;
+	String[] docsPerClassConcat;
+	Category[] cats;
+	Document[] docs;
+	private double[][] condprob;
+	private int[] prior;
+	private int n;
+	private Vocabulary v;
+	
+	public NaiveMultinomialClassifier(Category[] cats, Document[] docs, double alpha) {
+		this.alpha = alpha;
+		this.cats = cats;
+		this.docs = docs;
+		v = new Vocabulary(docs);
+		n = docs.length;
+		prior = new int[cats.length];
+		countDocsInClass(cats, docs);
+		condprob = new double[v.size()][cats.length];
+		train();
+	}
+	
+	
+	private void train() {
 		for (int i = 0; i < cats.length; i++) {
-			int n_c = countDocsInClass(cats[i], docs);
+			int n_c = getDocsInClass(i);
 			prior[i] = n_c;
 			
-			/*	Txt c = ConcatenateAllTextsOfDocsInClass(D, c);
-				foreach t in V do
-					Tct = CountTokensOfTerm(T xt c , t);
-					foreach t in V do
-						condprob[t][c] = bladiebla_zie_slides ;
-				
-					end
-				end
-			 */
+			String[] txt_c = Utils.split(docsPerClassConcat[i]);
+			WordCounter wc = new WordCounter(txt_c[i]);
 			
+			for (int j = 0; j < v.size(); j++) {
+				condprob [j][i] = ((wc.getWordCounter().get(j)+alpha) / (wc.totalWords() + (wc.uniqueWords()*alpha)));
+			}
 		}
 	}
 	
-	public Category apply(Category[] cats, Vocabulary v, int[] prior, int[][] condprob/*, d*/) {
+	public Category apply(Category[] cats, Vocabulary v, int[] prior, int[][] condprob) {
 		return null;
 	}
 	
@@ -39,13 +59,18 @@ public class NaiveMultinomialClassifier {
 	 */
 	// May want to incorporate ConcatenateAllTextsOfDocsInClass(D, c)
 	// and CountTokensOfTerm(T xt c , t) in a smart way...
-	private int countDocsInClass(Category cat, Document[] docs) {
-		int count = 0; 
-		for (Document d : docs) {
-			if (d.category.equals(cat.toString())) {
-				count++;
+	private void countDocsInClass(Category[] cats, Document[] docs) {
+		for (Document doc : docs) {
+			for (int i = 0; i < cats.length; i++) {
+				if (doc.getCategory().equals(cats[i].toString())) {
+				docsInClass[i]++;
+				docsPerClassConcat[i] += " " + doc.getContents();
+				}
 			}
 		}
-		return count;
+	}
+	
+	public int getDocsInClass(int i) {
+		return docsInClass[i];
 	}
 }
