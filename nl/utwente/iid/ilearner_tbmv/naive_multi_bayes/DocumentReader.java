@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class DocumentReader extends Thread{
-    public static final boolean DBG = false;
+    public static final boolean DBG = true;
     ArrayList<Document> documents;
 
     @Override

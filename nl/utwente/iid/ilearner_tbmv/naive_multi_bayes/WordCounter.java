@@ -1,5 +1,6 @@
 package nl.utwente.iid.ilearner_tbmv.naive_multi_bayes;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -8,10 +9,15 @@ public class WordCounter{
 	TreeMap<String, Integer> wordcounter;
 	int totalWords = 0;
 	
-	public WordCounter(String docs) {
+	public WordCounter(ArrayList<String> docs) {
 		wordcounter = new TreeMap<>();
+		String docString = "";
+		for (String doc : docs) {
+			docString += doc;
+			
+		}
 
-		String[] docs_split = Utils.split(docs);
+		String[] docs_split = Utils.splitStripped(docString);
 		for (totalWords = 0; totalWords < docs_split.length; totalWords++) {
 			if (wordcounter.containsKey(docs_split[totalWords])) {
 				wordcounter.put(docs_split[totalWords], wordcounter.get(docs_split[totalWords])+1);

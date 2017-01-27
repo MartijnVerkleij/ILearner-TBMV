@@ -10,7 +10,7 @@ public class NaiveMultinomialClassifier {
 	double alpha = 1.0;
 	
 	int[] docsInClass;
-	String[] docsPerClassConcat;
+	ArrayList<ArrayList<String>> docsPerClassConcat;
 	ArrayList<Category> cats;
 	ArrayList<Document> docs;
 	private double[] prior;
@@ -25,31 +25,44 @@ public class NaiveMultinomialClassifier {
 		n = docs.size();
 		prior = new double[cats.size()];
 		docsInClass = new int[cats.size()];
-		docsPerClassConcat = new String[cats.size()];
+		docsPerClassConcat = new ArrayList<ArrayList<String>>();
 		countDocsInClass(cats, docs);
 		train();
 	}
 	
 	
 	private void train() {
+		int[][][] chiTable = new int[v.getVocabulary().size()][cats.size()][2];
 		for (int i = 0; i < cats.size(); i++) {
 			int n_c = getDocsInClass(i);
 			prior[i] = (0.0 + n_c)/n;
 
-			String[] txt_c = Utils.split(docsPerClassConcat[i]);
-			WordCounter wc = new WordCounter(docsPerClassConcat[i]);
+			//String[] txt_c = Utils.split(docsPerClassConcat[i]);
+			WordCounter wc = new WordCounter(docsPerClassConcat.get(i));
+			int j = 0;
 			for (String word : v.getVocabulary().keySet()) {
+				chiTable[j][i][0] = wc.getValue(word);
+				chiTable[j][i][1] = docsPerClassConcat.get(i).size() - chiTable[j][i][0];
+				//System.out.println(chiTable[j][i][0] + " "+chiTable[j][i][1]);
+				//System.out.println(word);
 				//System.out.println("harambe " + (wc.getValue(word)+alpha) / (wc.uniqueWords() + (wc.totalWords()*alpha)));
 				//System.out.println("sletje " + wc.getValue(word));
-				v.putInProb(word, i, (wc.getValue(word)+alpha) / (wc.uniqueWords() + (wc.totalWords()*alpha)));
+				v.putInProb(word, i, (wc.getValue(word)+alpha) / (wc.uniqueWords() + (v.getVocabulary().size()*alpha)));
+				j++;
 			}
+		}
+		int j = 0;
+		for (String word : v.getVocabulary().keySet()) {
+			
+			v.putInChi(word, -999);
+			j++;
 		}
 	}
 	
 	public Category apply(Document doc) {
 		double[] score = new double[cats.size()];
 
-		String[] w = Utils.split(doc.getContents());
+		String[] w = Utils.splitStripped(doc.getContents());
 		for (int i = 0; i < cats.size(); i++) {
 			score[i] = Math.log(prior[i]);
 
@@ -82,11 +95,12 @@ public class NaiveMultinomialClassifier {
 	// May want to incorporate ConcatenateAllTextsOfDocsInClass(D, c)
 	// and CountTokensOfTerm(T xt c , t) in a smart way...
 	private void countDocsInClass(ArrayList<Category> cats, ArrayList<Document> docs) {
-		for (Document doc : docs) {
-			for (int i = 0; i < cats.size(); i++) {
+		for (int i = 0; i < cats.size(); i++) {
+			docsPerClassConcat.add(new ArrayList<>());
+			for (Document doc : docs) {
 				if (doc.getCategory().toString().equals(cats.get(i).toString())) {
 					docsInClass[i]++;
-					docsPerClassConcat[i] += " " + doc.getContents(); //TODO This probably is not the fastest way (String rebuilding on change)
+					docsPerClassConcat.get(i).add(doc.getContents()); //TODO This probably is not the fastest way (String rebuilding on change)
 				}
 			}
 		}
