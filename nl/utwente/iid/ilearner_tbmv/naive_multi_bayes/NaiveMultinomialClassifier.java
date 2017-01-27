@@ -1,7 +1,7 @@
 package nl.utwente.iid.ilearner_tbmv.naive_multi_bayes;
 
 
-
+import java.util.ArrayList;
 
 public class NaiveMultinomialClassifier {
 
@@ -11,60 +11,83 @@ public class NaiveMultinomialClassifier {
 	
 	int[] docsInClass;
 	String[] docsPerClassConcat;
-	Category[] cats;
-	Document[] docs;
-	private double[][] condprob;
-	private int[] prior;
+	ArrayList<Category> cats;
+	ArrayList<Document> docs;
+	private double[] prior;
 	private int n;
 	private Vocabulary v;
 	
-	public NaiveMultinomialClassifier(Category[] cats, Document[] docs, double alpha) {
+	public NaiveMultinomialClassifier(ArrayList<Category> cats, ArrayList<Document> docs, double alpha) {
 		this.alpha = alpha;
 		this.cats = cats;
 		this.docs = docs;
 		v = new Vocabulary(docs);
-		n = docs.length;
-		prior = new int[cats.length];
+		n = docs.size();
+		prior = new double[cats.size()];
+		docsInClass = new int[cats.size()];
+		docsPerClassConcat = new String[cats.size()];
 		countDocsInClass(cats, docs);
-		condprob = new double[v.size()][cats.length];
 		train();
 	}
 	
 	
 	private void train() {
-		for (int i = 0; i < cats.length; i++) {
+		for (int i = 0; i < cats.size(); i++) {
 			int n_c = getDocsInClass(i);
-			prior[i] = n_c;
-			
+			prior[i] = (0.0 + n_c)/n;
+			System.out.println("hoer " + prior[i]);
+
 			String[] txt_c = Utils.split(docsPerClassConcat[i]);
-			WordCounter wc = new WordCounter(txt_c[i]);
-			
-			for (int j = 0; j < v.size(); j++) {
-				condprob [j][i] = ((wc.getWordCounter().get(j)+alpha) / (wc.totalWords() + (wc.uniqueWords()*alpha)));
+			WordCounter wc = new WordCounter(docsPerClassConcat[i]);
+			for (String word : v.getVocabulary().keySet()) {
+				//System.out.println("harambe " + (wc.getValue(word)+alpha) / (wc.uniqueWords() + (wc.totalWords()*alpha)));
+				//System.out.println("sletje " + wc.getValue(word));
+				v.putInProb(word, i, (wc.getValue(word)+alpha) / (wc.uniqueWords() + (wc.totalWords()*alpha)));
 			}
 		}
 	}
 	
-	public Category apply(Category[] cats, Vocabulary v, int[] prior, int[][] condprob) {
-		return null;
+	public Category apply(Document doc) {
+		double[] score = new double[cats.size()];
+
+		String[] w = Utils.split(doc.getContents());
+		for (int i = 0; i < cats.size(); i++) {
+			score[i] = Math.log(prior[i]);
+
+			for (String word : w) {
+				System.out.println(v.getProb(word, i) + " " + word + " " + Math.log(v.getProb(word, i)));
+				score[i] += Math.log(v.getProb(word, i));
+				System.out.println("Score: "+score[i]);
+			}
+		}
+		int highestScorer = -1;
+		double highScore = Double.MIN_VALUE;
+		for (int i = 0; i < score.length; i++) {
+			if (score[i] > highScore) {
+				highScore = score[i];
+				highestScorer = i;
+			}
+		}
+
+		return cats.get(highestScorer);
 	}
 	
 	
 	/**
 	 * Counts the number of documents that have the same classifier as <cat>.
 	 * Algorithm is O(<docs>).
-	 * @param cat Category that count is requested from
+	 * @param cats Category that count is requested from
 	 * @param docs Document set that are classified
 	 * @return total of documents classified as <cat>
 	 */
 	// May want to incorporate ConcatenateAllTextsOfDocsInClass(D, c)
 	// and CountTokensOfTerm(T xt c , t) in a smart way...
-	private void countDocsInClass(Category[] cats, Document[] docs) {
+	private void countDocsInClass(ArrayList<Category> cats, ArrayList<Document> docs) {
 		for (Document doc : docs) {
-			for (int i = 0; i < cats.length; i++) {
-				if (doc.getCategory().equals(cats[i].toString())) {
-				docsInClass[i]++;
-				docsPerClassConcat[i] += " " + doc.getContents();
+			for (int i = 0; i < cats.size(); i++) {
+				if (doc.getCategory().toString().equals(cats.get(i).toString())) {
+					docsInClass[i]++;
+					docsPerClassConcat[i] += " " + doc.getContents(); //TODO This probably is not the fastest way (String rebuilding on change)
 				}
 			}
 		}

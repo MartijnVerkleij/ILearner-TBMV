@@ -5,12 +5,13 @@ import java.util.TreeMap;
 
 public class WordCounter{
 	
-	TreeMap<String, Integer> wordcounter = new TreeMap<>();
+	TreeMap<String, Integer> wordcounter;
 	int totalWords = 0;
 	
-	
 	public WordCounter(String docs) {
-		String[] docs_split = Utils.split(docs); 
+		wordcounter = new TreeMap<>();
+
+		String[] docs_split = Utils.split(docs);
 		for (totalWords = 0; totalWords < docs_split.length; totalWords++) {
 			if (wordcounter.containsKey(docs_split[totalWords])) {
 				wordcounter.put(docs_split[totalWords], wordcounter.get(docs_split[totalWords])+1);
@@ -19,8 +20,15 @@ public class WordCounter{
 			}
 		}
 	}
-	
-	
+
+	public int getValue(String word) {
+		if (wordcounter.get(word) != null) {
+			return wordcounter.get(word);
+		} else {
+			return 0;
+		}
+	}
+
 	public Map<String, Integer> getWordCounter() {
 		return wordcounter;
 	}
