@@ -36,17 +36,11 @@ public class NaiveMultinomialClassifier {
 		for (int i = 0; i < cats.size(); i++) {
 			int n_c = getDocsInClass(i);
 			prior[i] = (0.0 + n_c)/n;
-
-			//String[] txt_c = Utils.split(docsPerClassConcat[i]);
 			WordCounter wc = new WordCounter(docsPerClassConcat.get(i));
 			int j = 0;
 			for (String word : v.getVocabulary().keySet()) {
 				chiTable[j][i][0] = wc.getValue(word);
 				chiTable[j][i][1] = docsPerClassConcat.get(i).size() - chiTable[j][i][0];
-				//System.out.println(chiTable[j][i][0] + " "+chiTable[j][i][1]);
-				//System.out.println(word);
-				//System.out.println("harambe " + (wc.getValue(word)+alpha) / (wc.uniqueWords() + (wc.totalWords()*alpha)));
-				//System.out.println("sletje " + wc.getValue(word));
 				v.putInProb(word, i, (wc.getValue(word)+alpha) / (wc.uniqueWords() + (v.getVocabulary().size()*alpha)));
 				j++;
 			}
@@ -85,11 +79,9 @@ public class NaiveMultinomialClassifier {
 		String[] w = Utils.splitStripped(doc.getContents());
 		for (int i = 0; i < cats.size(); i++) {
 			score[i] = Math.log(prior[i]);
-			int application = 0;
 			for (String word : w) {
-				if (v.getVocabulary().containsKey(word) && v.getChi(word) > 280 && v.getChi(word) < 300) {
+				if (v.getVocabulary().containsKey(word) /*&& v.getChi(word) > 280 && v.getChi(word) < 300*/) {
 					score[i] += Math.log(v.getProb(word, i));
-					application++;
 				}
 			}
 			//System.out.println(application);
@@ -122,7 +114,7 @@ public class NaiveMultinomialClassifier {
 			for (Document doc : docs) {
 				if (doc.getCategory().toString().equals(cats.get(i).toString())) {
 					docsInClass[i]++;
-					docsPerClassConcat.get(i).add(doc.getContents()); //TODO This probably is not the fastest way (String rebuilding on change)
+					docsPerClassConcat.get(i).add(doc.getContents());
 				}
 			}
 		}
