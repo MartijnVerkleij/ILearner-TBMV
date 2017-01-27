@@ -35,7 +35,6 @@ public class NaiveMultinomialClassifier {
 		for (int i = 0; i < cats.size(); i++) {
 			int n_c = getDocsInClass(i);
 			prior[i] = (0.0 + n_c)/n;
-			System.out.println("hoer " + prior[i]);
 
 			String[] txt_c = Utils.split(docsPerClassConcat[i]);
 			WordCounter wc = new WordCounter(docsPerClassConcat[i]);
@@ -55,13 +54,13 @@ public class NaiveMultinomialClassifier {
 			score[i] = Math.log(prior[i]);
 
 			for (String word : w) {
-				System.out.println(v.getProb(word, i) + " " + word + " " + Math.log(v.getProb(word, i)));
-				score[i] += Math.log(v.getProb(word, i));
-				System.out.println("Score: "+score[i]);
+				if (v.getVocabulary().containsKey(word)) {
+					score[i] += Math.log(v.getProb(word, i));
+				}
 			}
 		}
 		int highestScorer = -1;
-		double highScore = Double.MIN_VALUE;
+		double highScore = -Double.MAX_VALUE;
 		for (int i = 0; i < score.length; i++) {
 			if (score[i] > highScore) {
 				highScore = score[i];

@@ -9,6 +9,6 @@ public class Utils {
     }
 
     public static String[] splitStripped(String string) {
-        return string.split(" |\\?|!|.|,|\"");
+        return string.split(" |\\?|!|.|,|\"|-|_");
     }
 }

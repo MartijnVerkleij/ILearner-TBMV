@@ -7,10 +7,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class DocumentReader extends Thread{
-    public static final boolean DBG = true;
+    public static final boolean DBG = false;
     ArrayList<Document> documents;
 
     @Override
@@ -54,25 +55,31 @@ public class DocumentReader extends Thread{
 
         NaiveMultinomialClassifier nmc = new NaiveMultinomialClassifier(categories, documents, 1.0);
 
-        int[] scores = new int[categories.size()];
-        int total = 0;
+        HashMap<Category, ArrayList<Document>> testDocsByCat = new HashMap<>();
+        int score[] = new int[categories.size()];
+        int amount[] = new int[categories.size()];
 
-        for (int i = 0; i < categories.size(); i++) {
-            System.out.println("folder for test data cat " + categories.get(i).toString());
+        for (Category category : categories) {
+            testDocsByCat.put(category, new ArrayList<>());
 
-            ArrayList<Document> testDocs = new ArrayList<>();
-            String directory = scanner.nextLine();
-            File directoryFile = new File(directory);
-            scanFile(directoryFile, null, testDocs);
-            for (Document doc : testDocs) {
-                Category cat = nmc.apply(doc);
-                scores[categories.indexOf(cat)] += 1;
-                total++;
+            System.out.println("Folder for test data category " + category.toString() + ":");
+            String dir = scanner.nextLine();
+            File directoryFile = new File(dir);
+            scanFile(directoryFile, category, testDocsByCat.get(category));
+        }
+
+        for (Category category : categories) {
+            int i = categories.indexOf(category);
+
+            for (Document document : testDocsByCat.get(category)) {
+                amount[i]++;
+                Category result = nmc.apply(document);
+                if (result.equals(category)) {
+                    score[i]++;
+                }
             }
-            System.out.println("Total: " + total);
-            for (int j = 0; j < scores.length; j++) {
-                System.out.println(categories.get(i).toString() + ": " + scores[i]);
-            }
+
+            System.out.println(category + ": " + score[i] + " out of " + amount[i]);
         }
     }
 
