@@ -16,6 +16,18 @@ public class Vocabulary {
 			}
 		}
 	}
+	
+	/**
+	 * Direct Vocabulary Set constructor for use in WordCounter;
+	 * @param strippedWords Word array, stripped;
+	 */
+	public Vocabulary(String[] strippedWords) {
+		if (vocabulary == null)
+			vocabulary = new HashMap();
+		for (String w : strippedWords) {
+			vocabulary.put(w, new ArrayList<>());
+		}
+	}
 
 	public double getProb(String word, int cat) {
 		if (vocabulary.get(word) != null) {
@@ -34,8 +46,8 @@ public class Vocabulary {
 	public void putInChi(String word, double value) {
 		vocabulary.get(word).add(value);
 	}
-	public void getChi(String word) {
-		vocabulary.get(word).get(vocabulary.get(word).size() - 1);
+	public double getChi(String word) {
+		return vocabulary.get(word).get(vocabulary.get(word).size() - 1);
 	}
 	
 	public int size() {

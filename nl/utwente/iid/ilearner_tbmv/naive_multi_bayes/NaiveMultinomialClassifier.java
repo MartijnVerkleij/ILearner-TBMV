@@ -53,8 +53,28 @@ public class NaiveMultinomialClassifier {
 		}
 		int j = 0;
 		for (String word : v.getVocabulary().keySet()) {
+			int[][] expect = new int[2][cats.size()];
+			int w = 0;
+			int wi = 0;
 			
-			v.putInChi(word, -999);
+			for (int i = 0; i < cats.size(); i++) {
+				w += chiTable[j][i][0];
+				wi += chiTable[j][i][1];
+			}
+			// calculate expected values
+			for (int i = 0; i < cats.size(); i++) {
+				expect[0][i] = (w * (chiTable[j][i][0] + chiTable[j][i][1]))/(w+wi);
+				expect[1][i] = (wi * (chiTable[j][i][1] + chiTable[j][i][1]))/(w+wi);
+			}
+			// calculate chi score
+			double result = 0d;
+			for (int i = 0; i < cats.size(); i++) {
+				//(m(i,j) - e(i,j))^2 / e(i,j)
+				result += Math.pow((chiTable[j][i][0] - expect[0][i]), 2d) / expect[0][i];
+				result += Math.pow((chiTable[j][i][1] - expect[1][i]), 2d) / expect[1][i];
+			}
+			v.putInChi(word, result);
+			//System.out.println(result);
 			j++;
 		}
 	}
@@ -65,12 +85,14 @@ public class NaiveMultinomialClassifier {
 		String[] w = Utils.splitStripped(doc.getContents());
 		for (int i = 0; i < cats.size(); i++) {
 			score[i] = Math.log(prior[i]);
-
+			int application = 0;
 			for (String word : w) {
-				if (v.getVocabulary().containsKey(word)) {
+				if (v.getVocabulary().containsKey(word) && v.getChi(word) > 280 && v.getChi(word) < 300) {
 					score[i] += Math.log(v.getProb(word, i));
+					application++;
 				}
 			}
+			//System.out.println(application);
 		}
 		int highestScorer = -1;
 		double highScore = -Double.MAX_VALUE;

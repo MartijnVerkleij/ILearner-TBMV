@@ -7,22 +7,17 @@ import java.util.TreeMap;
 public class WordCounter{
 	
 	TreeMap<String, Integer> wordcounter;
-	int totalWords = 0;
 	
 	public WordCounter(ArrayList<String> docs) {
 		wordcounter = new TreeMap<>();
-		String docString = "";
 		for (String doc : docs) {
-			docString += doc;
-			
-		}
-
-		String[] docs_split = Utils.splitStripped(docString);
-		for (totalWords = 0; totalWords < docs_split.length; totalWords++) {
-			if (wordcounter.containsKey(docs_split[totalWords])) {
-				wordcounter.put(docs_split[totalWords], wordcounter.get(docs_split[totalWords])+1);
-			} else {
-				wordcounter.put(docs_split[totalWords], 1);
+			Vocabulary v = new Vocabulary(Utils.splitStripped(doc));
+			for (String word : v.getVocabulary().keySet()) {
+				if (wordcounter.containsKey(word)) {
+					wordcounter.put(word, wordcounter.get(word)+1);
+				} else {
+					wordcounter.put(word, 1);
+				}
 			}
 		}
 	}
@@ -41,10 +36,6 @@ public class WordCounter{
 	
 	public int uniqueWords() {
 		return wordcounter.size();
-	}
-	
-	public int totalWords() {
-		return totalWords - 1;
 	}
 	
 
