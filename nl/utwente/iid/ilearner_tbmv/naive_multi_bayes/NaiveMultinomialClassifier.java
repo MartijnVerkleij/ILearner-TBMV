@@ -2,7 +2,6 @@ package nl.utwente.iid.ilearner_tbmv.naive_multi_bayes;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class NaiveMultinomialClassifier {
 
@@ -63,12 +62,12 @@ public class NaiveMultinomialClassifier {
 				expect[0][i] = (w * (chiTable[j][i][0] + chiTable[j][i][1]))/(w+wi);
 				expect[1][i] = (wi * (chiTable[j][i][0] + chiTable[j][i][1]))/(w+wi);
 				//System.out.println(word);
-				//System.out.println(expect[0][i] +", " + expect[1][i]);
 			}
 			// calculate chi score
 			double result = 0d;
 			for (int i = 0; i < cats.size(); i++) {
 				//(m(i,j) - e(i,j))^2 / e(i,j)
+				//System.out.println(expect[0][i] +", " + expect[1][i]);
 				result += Math.pow((chiTable[j][i][0] - expect[0][i]), 2d) / expect[0][i];
 				result += Math.pow((chiTable[j][i][1] - expect[1][i]), 2d) / expect[1][i];
 			}
@@ -78,14 +77,14 @@ public class NaiveMultinomialClassifier {
 		}
 	}
 	
-	public Category apply(Document doc) {
+	public Category apply(Document doc, int chi) {
 		double[] score = new double[cats.size()];
-		
+
 		String[] w = Utils.splitStripped(doc.getContents());
 		for (int i = 0; i < cats.size(); i++) {
 			score[i] = Math.log(prior[i]);
 			for (String word : w) {
-				if (v.getVocabulary().containsKey(word) && v.getChi(word) > 8 && v.getChi(word) < 15) {
+				if (v.getVocabulary().containsKey(word) && v.getChi(word) > chi && v.getChi(word) < 15) {
 					score[i] += Math.log(v.getProb(word, i));
 				}
 			}

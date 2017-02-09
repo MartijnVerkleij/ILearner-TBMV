@@ -33,7 +33,6 @@ public class GUI extends Application {
     ObservableList<String> categoryNames = FXCollections.observableArrayList();
 
     GridPane grid;
-    int highestRow = 2;
 
     NaiveMultinomialClassifier nmc;
 
@@ -70,17 +69,17 @@ public class GUI extends Application {
         scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
         grid.add(scenetitle, 0, 0, 2, 1);
 
-        Label userName = new Label("Category:");
-        grid.add(userName, 0, 1);
+        Label cat = new Label("Category:");
+        grid.add(cat, 0, 1);
 
-        TextField userTextField = new TextField();
-        grid.add(userTextField, 1, 1);
+        TextField catText = new TextField();
+        grid.add(catText, 1, 1);
 
         Button btnAddCategory = new Button("+");
         btnAddCategory.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                String name = userTextField.getText();
+                String name = catText.getText();
                 DirectoryChooser chooser = new DirectoryChooser();
                 chooser.setInitialDirectory(new File(System.getProperty("user.dir")));
                 chooser.setTitle("Choose training folder");
@@ -89,7 +88,7 @@ public class GUI extends Application {
                     directories.add(new CategoryDirectory(new Category(name), chosen));
                     directoriesTexts.add(name + " - " + chosen.getAbsolutePath());
                     categoryNames.add(name);
-                    userTextField.clear();
+                    catText.clear();
                 }
             }
         });
@@ -134,11 +133,17 @@ public class GUI extends Application {
         grid2.setVgap(10);
         grid2.setPadding(new Insets(25, 25, 25, 25));
 
+        Label chi = new Label("Chi:");
+        grid2.add(chi, 0, 1);
+
+        TextField chiText = new TextField();
+        grid2.add(chiText, 1, 1);
+
         Label label = new Label("Category:");
-        grid2.add(label, 0, 1);
+        grid2.add(label, 0, 2);
 
         ComboBox comboBox = new ComboBox(categoryNames);
-        grid2.add(comboBox, 1, 1);
+        grid2.add(comboBox, 1, 2);
 
         Button btnAddCategory2 = new Button("+");
         btnAddCategory2.setOnAction(new EventHandler<ActionEvent>() {
@@ -153,10 +158,10 @@ public class GUI extends Application {
                 testingNames.add(name + " - " + chosen.getAbsolutePath());
             }
         });
-        grid2.add(btnAddCategory2, 2, 1);
+        grid2.add(btnAddCategory2, 2, 2);
 
         ListView listView2 = new ListView(testingNames);
-        grid2.add(listView2, 0, 2);
+        grid2.add(listView2, 0, 3);
 
         Button btn2 = new Button("Test");
         HBox hbBtn2 = new HBox(10);
@@ -180,7 +185,8 @@ public class GUI extends Application {
                     }
 
                     scores.get(document.getCategory()).incAmount();
-                    Category tested = nmc.apply(document);
+                    int chiV = Integer.parseInt(chiText.getText());
+                    Category tested = nmc.apply(document, chiV);
                     if (tested.toString().equals(document.getCategory().toString())) {
                         scores.get(document.getCategory()).incCorrect();
                     }
@@ -188,7 +194,10 @@ public class GUI extends Application {
 
                 String resultText = "";
                 for (Category category : scores.keySet()) {
-                    resultText += category.toString() + ": " + scores.get(category).getCorrect() + " correct out of " + scores.get(category).getAmount() + "\n";
+                    double percentage = (double) scores.get(category).getCorrect() / scores.get(category).getAmount();
+                    percentage *= 100;
+                    resultText += category.toString() + ": " + scores.get(category).getCorrect() + " correct out of "
+                            + scores.get(category).getAmount() + " (" + percentage + "%)" + "\n";
                 }
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -204,9 +213,5 @@ public class GUI extends Application {
         tabs.getTabs().add(tab2);
 
         primaryStage.show();
-    }
-
-    private int incrementRow() {
-        return ++highestRow;
     }
 }

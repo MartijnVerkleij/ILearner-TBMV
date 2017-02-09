@@ -71,7 +71,7 @@ public class DocumentReader extends Thread{
 
             for (Document document : testDocsByCat.get(category)) {
                 amount[i]++;
-                Category result = nmc.apply(document);
+                Category result = nmc.apply(document, 8);
                 if (result.equals(category)) {
                     score[i]++;
                 }
