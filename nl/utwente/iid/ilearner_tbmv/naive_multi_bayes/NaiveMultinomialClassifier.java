@@ -2,6 +2,7 @@ package nl.utwente.iid.ilearner_tbmv.naive_multi_bayes;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class NaiveMultinomialClassifier {
 
@@ -40,14 +41,16 @@ public class NaiveMultinomialClassifier {
 			int j = 0;
 			for (String word : v.getVocabulary().keySet()) {
 				chiTable[j][i][0] = wc.getValue(word);
-				chiTable[j][i][1] = docsPerClassConcat.get(i).size() - chiTable[j][i][0];
+				chiTable[j][i][1] = docsPerClassConcat.get(i).size() - wc.getValue(word);
+				//System.out.println(word);
+				//System.out.println(chiTable[j][i][0]+ ", "+ chiTable[j][i][1]);
 				v.putInProb(word, i, (wc.getValue(word)+alpha) / (wc.uniqueWords() + (v.getVocabulary().size()*alpha)));
 				j++;
 			}
 		}
 		int j = 0;
 		for (String word : v.getVocabulary().keySet()) {
-			int[][] expect = new int[2][cats.size()];
+			float[][] expect = new float[2][cats.size()];
 			int w = 0;
 			int wi = 0;
 			
@@ -58,7 +61,9 @@ public class NaiveMultinomialClassifier {
 			// calculate expected values
 			for (int i = 0; i < cats.size(); i++) {
 				expect[0][i] = (w * (chiTable[j][i][0] + chiTable[j][i][1]))/(w+wi);
-				expect[1][i] = (wi * (chiTable[j][i][1] + chiTable[j][i][1]))/(w+wi);
+				expect[1][i] = (wi * (chiTable[j][i][0] + chiTable[j][i][1]))/(w+wi);
+				//System.out.println(word);
+				//System.out.println(expect[0][i] +", " + expect[1][i]);
 			}
 			// calculate chi score
 			double result = 0d;
@@ -68,19 +73,19 @@ public class NaiveMultinomialClassifier {
 				result += Math.pow((chiTable[j][i][1] - expect[1][i]), 2d) / expect[1][i];
 			}
 			v.putInChi(word, result);
-			//System.out.println(result);
+			System.out.println(result);
 			j++;
 		}
 	}
 	
 	public Category apply(Document doc) {
 		double[] score = new double[cats.size()];
-
+		
 		String[] w = Utils.splitStripped(doc.getContents());
 		for (int i = 0; i < cats.size(); i++) {
 			score[i] = Math.log(prior[i]);
 			for (String word : w) {
-				if (v.getVocabulary().containsKey(word) /*&& v.getChi(word) > 280 && v.getChi(word) < 300*/) {
+				if (v.getVocabulary().containsKey(word) && v.getChi(word) > 8 && v.getChi(word) < 15) {
 					score[i] += Math.log(v.getProb(word, i));
 				}
 			}
